@@ -15,7 +15,7 @@ public class CarouselController : MonoBehaviour
     [Header("Level Settings")]
     public int currentLevel = 1;                           // Текущий уровень (1, 2, 3)
     private List<GameObject> currentMasses = new List<GameObject>(); // Активные грузы на сцене
-    private static List<float> currentMassesDistance = new List<float>(); // Расстояния активныч грузов на сцене
+    private static List<float> currentMassesDistance = new List<float>(); // Расстояния активных грузов на сцене
 
 
     [Header("Control Settings")]
@@ -150,6 +150,7 @@ public class CarouselController : MonoBehaviour
             if (mass != null) Destroy(mass);
         }
         currentMasses.Clear();
+        currentMassesDistance.Clear();
 
         // Создаем грузы в зависимости от уровня
         switch (level)
@@ -174,6 +175,7 @@ public class CarouselController : MonoBehaviour
         // Сбрасываем выбор объекта
         selectedMassIndex = 0;
 
+        
         // Пересчитываем физику и раскручиваем
         UpdateInertiaTensor();
         // SaveInitialOffsets();
@@ -190,6 +192,12 @@ public class CarouselController : MonoBehaviour
 
             // РАСЧЕТ РАССТОЯНИЯ ОТ ЦЕНТРА (по X)
             float distance = Mathf.Abs(massPoints[pointIndex].localPosition.x); // Берем абсолютное значение
+
+            for (int i = 0; i < massPoints.Count; i++)
+            {
+                Debug.Log($"massPoints[pointIndex]------------------------------------------- {massPoints[pointIndex]}");
+            }
+
             currentMassesDistance.Add(distance);
             
             Debug.Log($"Spawned mass at point {pointIndex}, distance from center: {distance}");
@@ -225,17 +233,15 @@ public class CarouselController : MonoBehaviour
             if (currentMasses[i] == null) continue;
             
             MassObject massComp = currentMasses[i].GetComponent<MassObject>();
-            if (massComp != null)
-            {
-                // ИСПОЛЬЗУЙ ТЕКУЩИЕ РАССТОЯНИЯ ИЗ СПИСКА!
-                float distance = currentMassesDistance[i];
-                float m = massComp.massValue;
-                
-                I_masses += m * distance * distance;
-                
-                // ДЛЯ ОТЛАДКИ
-                Debug.Log($"Mass {i}: distance={distance:F2}, mass={m}, I_add={m * distance * distance:F2}");
-            }
+            
+            // текущие расстояния из списка!
+            float distance = currentMassesDistance[i];
+            float m = massComp.massValue;
+            
+            I_masses += m * distance * distance;
+            
+            // ДЛЯ ОТЛАДКИ
+            Debug.Log($"Mass {i}: distance={distance:F2}, mass={m}, I_add={m * distance * distance:F2}");
         }
 
         float I_total = I_platform + I_masses;
